@@ -16,7 +16,7 @@ def main_unit():
         mothers = jpxpy.realtime_index.get_realtime_index_mothers()
         low_price = mothers["low_price"]
         if short_stop_value > low_price:
-            print("low")
+            print(mothers["low_price_time"] + ":" + mothers["low_price"])
 
         time.sleep(loop_sec)
 
@@ -24,7 +24,7 @@ def main_unit():
 def daemonize():
     pid = os.fork()
     if pid > 0:
-        pid_file = open('/var/run/python_daemon.pid', 'w')
+        pid_file = open('/tmp/rikka_daemon.pid', 'w')
         pid_file.write(str(pid)+"\n")
         pid_file.close()
         sys.exit()
@@ -33,7 +33,7 @@ def daemonize():
 
 
 if __name__ == '__main__':
-    while True:
-        daemonize()
-
+    # while True:
+    #     daemonize()
+    main_unit()
 
