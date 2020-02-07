@@ -17,25 +17,34 @@ def logger_init(name='test'):
 
 def main_unit():
     loop_sec = 60
+    logger = logger_init()
+    while True:
+        mothers(logger)
+        time.sleep(loop_sec)
+
+
+def mothers(logger):
     short_stop_value = 816.00
     long_stop_value = 0.0
-    logger = logger_init()
-    logger.info(f"rikka: long_stop_value:[{long_stop_value}],short_stop_value:[{short_stop_value}]")
-    while True:
-        try:
-            mothers = jpxpy.realtime_index.get_realtime_index_mothers()
-            close_price_time = mothers["close_price_time"]
-            close_price = mothers["close_price"]
-            if close_price and long_stop_value != 0 and long_stop_value < close_price:
-                logger.info(f"LONG ORDER close_price:[{close_price},({close_price_time})]")
-            elif close_price and short_stop_value != 0 and short_stop_value > close_price:
-                logger.info(f"SHORT ORDER close_price:[{close_price},({close_price_time})]")
-            else:
-                logger.info(f"NONE ORDER close_price:[{close_price}({close_price_time})]"
-                            f",stop_order_value:[{long_stop_value}],stop_short_value:[{short_stop_value}]")
-        except Exception as err:
-            logger.error(err)
-        time.sleep(loop_sec)
+    # logger.info(f"rikka: long_stop_value:[{long_stop_value}],short_stop_value:[{short_stop_value}]")
+    try:
+        mothers = jpxpy.realtime_index.get_realtime_index_mothers()
+        close_price_time = mothers["close_price_time"]
+        close_price = mothers["close_price"]
+        if close_price and long_stop_value != 0 and long_stop_value < close_price:
+            logger.info(f"LONG ORDER close_price:[{close_price},({close_price_time})]")
+        elif close_price and short_stop_value != 0 and short_stop_value > close_price:
+            logger.info(f"SHORT ORDER close_price:[{close_price},({close_price_time})]")
+        else:
+            logger.info(f"NONE ORDER close_price:[{close_price}({close_price_time})]"
+                        f",stop_order_value:[{long_stop_value}],stop_short_value:[{short_stop_value}]")
+    except Exception as err:
+        logger.error(err)
+    pass
+
+
+def topix_reit():
+    pass
 
 
 def daemonize():
