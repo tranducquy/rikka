@@ -6,8 +6,11 @@ import os
 import time
 import json
 import sys
-import jpxpy.realtime_index
+import pandas as pd
+import urllib
 from logging import config, getLogger
+from datetime import datetime
+import jpxpy.realtime_index
 
 
 def logger_init(name='test'):
@@ -15,35 +18,69 @@ def logger_init(name='test'):
     return getLogger(name)
 
 
+logger = logger_init()
+
+
 def main_unit():
     loop_sec = 60
-    logger = logger_init()
+    max_notify_count = 5
+    # [x] CSVから逆指値取得
+    # [x] WEBから指数の現在値取得
+    # [x] 比較
+    # [ ] 通知
+    # [ ] 通知後のカウントアップ
+    # [ ] CSV書き込み
+    # [x] sleep
     while True:
-        mothers(logger)
+        df = pd.read_csv("entry.csv")
+        # mothers
+        index_name = "mothers"
+        mothers_df = df[df['index_name'] == index_name]
+        stop_long_value = mothers_df["stop_long"][0]
+        stop_short_value = mothers_df["stop_short"][0]
+        notify_count = mothers_df["notify_count"][0]
+        close_price_time, close_price = get_closeprice(index_name)
+        # TODO:通知でclose_priceの折れ線グラフを送りたい
+        if stop_long_value != 0 and stop_long_value <= close_price:
+            logger.info(f"long trigger[{notify_count}]:"
+                        f"index[{index_name}],stop_long_value[{stop_long_value:.2f}], close_price[{close_price:.2f}]")
+            notify_count += 1
+        elif stop_short_value != 0 and stop_short_value <= close_price:
+            logger.info(f"short trigger[{notify_count}]:index[{index_name}]"
+                        f", stop_short_value[{stop_short_value:.2f}], close_price[{close_price:.2f}]")
+            notify_count += 1
+        else:
+            logger.info(f"None Order close_price:[{close_price}]"
+                        f", stop_long_value:[{stop_long_value}], stop_short_value:[{stop_short_value}]")
+
         time.sleep(loop_sec)
 
 
-def mothers(logger):
-    short_stop_value = 816.00
-    long_stop_value = 0.0
-    # logger.info(f"rikka: long_stop_value:[{long_stop_value}],short_stop_value:[{short_stop_value}]")
-    try:
-        mothers = jpxpy.realtime_index.get_realtime_index_mothers()
-        close_price_time = mothers["close_price_time"]
-        close_price = mothers["close_price"]
-        if close_price and long_stop_value != 0 and long_stop_value < close_price:
-            logger.info(f"LONG ORDER close_price:[{close_price},({close_price_time})]")
-        elif close_price and short_stop_value != 0 and short_stop_value > close_price:
-            logger.info(f"SHORT ORDER close_price:[{close_price},({close_price_time})]")
-        else:
-            logger.info(f"NONE ORDER close_price:[{close_price}({close_price_time})]"
-                        f",stop_order_value:[{long_stop_value}],stop_short_value:[{short_stop_value}]")
-    except Exception as err:
-        logger.error(err)
+def nofify_stop_trigger():
     pass
 
 
+def get_closeprice(index_name):
+    close_price_time = None
+    close_price = None
+    try:
+        if index_name == "mothers":
+            rs = jpxpy.realtime_index.get_realtime_index_mothers()
+        else:
+            return None, None
+        close_price_time = rs["close_price_time"]
+        close_price = rs["close_price"]
+    except Exception as err:
+        logger.error(err)
+    logger.info(f"{index_name}:{close_price:.2f}({close_price_time})")
+    return close_price_time, close_price
+
+
 def topix_reit():
+    pass
+
+
+def dow30():
     pass
 
 
