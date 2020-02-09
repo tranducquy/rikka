@@ -47,6 +47,8 @@ def check_entry(index_name, max_notify_count):
     stop_short_value = temp_df["stop_short"][0]
     notify_count = temp_df["notify_count"][0]
     close_time, close_price = get_closeprice(index_name)
+    if close_price is None:
+        return
     line_agent = line.Line(line_token.line_token)
     if notify_count >= max_notify_count:
         logger.debug(f"notify_count:[{notify_count}], max_notify_count:[{max_notify_count}]")
@@ -93,9 +95,10 @@ def get_closeprice(index_name):
             return None, None
         close_time = rs["close_time"]
         close_price = rs["close_price"]
+        logger.info(f"{index_name}:{close_price:.2f}({close_time})")
     except Exception as err:
-        logger.error(err)
-    logger.info(f"{index_name}:{close_price:.2f}({close_time})")
+        # logger.debug(err)
+        pass
     return close_time, close_price
 
 
