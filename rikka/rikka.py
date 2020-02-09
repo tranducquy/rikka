@@ -14,7 +14,8 @@ import line_token
 
 
 def logger_init(name='test'):
-    config.dictConfig(json.loads(open("log.json", encoding='UTF-8').read()))
+    log_config = "log.json"
+    config.dictConfig(json.loads(open(log_config, encoding='UTF-8').read()))
     return getLogger(name)
 
 
@@ -29,14 +30,15 @@ def main_unit():
     # TODO:N225
     while True:
         # mothers
-        check_entry("mothers", max_notify_count)
-        check_entry("topix_reit", max_notify_count)
-        check_entry("topix", max_notify_count)
+        check_entry_jpx("mothers", max_notify_count)
+        check_entry_jpx("topix_reit", max_notify_count)
+        check_entry_jpx("topix", max_notify_count)
         time.sleep(loop_sec)
 
 
-def check_entry(index_name, max_notify_count):
-    df = pd.read_csv("entry.csv", index_col=0)
+def check_entry_jpx(index_name, max_notify_count):
+    csv = "entry.csv"
+    df = pd.read_csv(csv, index_col=0)
     temp_df = df[df.index == index_name]
     stop_long_value = temp_df["stop_long"][0]
     stop_short_value = temp_df["stop_short"][0]
@@ -53,7 +55,7 @@ def check_entry(index_name, max_notify_count):
         logger.info(msg)
         line_agent.send_message(msg)
         df.loc[index_name, "notify_count"] = notify_count
-        df.to_csv("entry.csv")
+        df.to_csv(csv)
     elif stop_short_value != 0 and stop_short_value <= close_price:
         notify_count += 1
         msg = f"short trigger[{notify_count}]:index[{index_name}]" \
@@ -61,10 +63,10 @@ def check_entry(index_name, max_notify_count):
         logger.info(msg)
         line_agent.send_message(msg)
         df.loc[index_name, "notify_count"] = notify_count
-        df.to_csv("entry.csv")
+        df.to_csv(csv)
     else:
-        logger.info(f"None Order close_price:[{close_price}]"
-                    f", stop_long_value:[{stop_long_value}], stop_short_value:[{stop_short_value}]")
+        logger.debug(f"None Order close_price:[{close_price}]"
+                     f", stop_long_value:[{stop_long_value}], stop_short_value:[{stop_short_value}]")
 
 
 def get_closeprice(index_name):
