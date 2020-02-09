@@ -4,8 +4,8 @@ import requests
 
 
 class Line:
-    def __init__(self):
-        self.line_notify_token = ''
+    def __init__(self, token):
+        self.line_notify_token = token
         self.line_notify_api = 'https://notify-api.line.me/api/notify'
         self.line_notify = None
 
