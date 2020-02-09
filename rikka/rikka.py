@@ -70,7 +70,7 @@ def check_entry(index_name, max_notify_count):
         df.loc[index_name, "notify_count"] = notify_count
         df.to_csv(csv)
     else:
-        logger.debug(f"None Order close_price:[{close_price}]"
+        logger.debug(f"None Order index[{index_name}], close_price:[{close_price}]"
                      f", stop_long_value:[{stop_long_value}], stop_short_value:[{stop_short_value}]")
 
 
