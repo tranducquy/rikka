@@ -8,7 +8,9 @@ import json
 import sys
 import pandas as pd
 from logging import config, getLogger
+from datetime import datetime as dt
 import jpxpy.realtime_index
+import investpy
 import line
 import line_token
 
@@ -30,20 +32,21 @@ def main_unit():
     # TODO:N225
     while True:
         # mothers
-        check_entry_jpx("mothers", max_notify_count)
-        check_entry_jpx("topix_reit", max_notify_count)
-        check_entry_jpx("topix", max_notify_count)
+        check_entry("mothers", max_notify_count)
+        check_entry("topix_reit", max_notify_count)
+        check_entry("topix", max_notify_count)
+        check_entry("dji", max_notify_count)
         time.sleep(loop_sec)
 
 
-def check_entry_jpx(index_name, max_notify_count):
+def check_entry(index_name, max_notify_count):
     csv = "entry.csv"
     df = pd.read_csv(csv, index_col=0)
     temp_df = df[df.index == index_name]
     stop_long_value = temp_df["stop_long"][0]
     stop_short_value = temp_df["stop_short"][0]
     notify_count = temp_df["notify_count"][0]
-    close_price_time, close_price = get_closeprice(index_name)
+    close_time, close_price = get_closeprice(index_name)
     line_agent = line.Line(line_token.line_token)
     if notify_count >= max_notify_count:
         logger.debug(f"notify_count:[{notify_count}], max_notify_count:[{max_notify_count}]")
@@ -70,7 +73,7 @@ def check_entry_jpx(index_name, max_notify_count):
 
 
 def get_closeprice(index_name):
-    close_price_time = None
+    close_time = None
     close_price = None
     try:
         if index_name == "mothers":
@@ -79,14 +82,21 @@ def get_closeprice(index_name):
             rs = jpxpy.realtime_index.get_realtime_index_topix_reit()
         elif index_name == "topix":
             rs = jpxpy.realtime_index.get_realtime_index_topix()
+        elif index_name == "dji":
+            # current_date = dt.now().strftime("%Y-%m-%d")
+            # data = investpy.get_index_historical_data(index="Dow 30"
+            #                                           , country="united states"
+            #                                           , from_date=current_date
+            #                                           , to_date=current_date)
+            pass
         else:
             return None, None
-        close_price_time = rs["close_price_time"]
+        close_time = rs["close_time"]
         close_price = rs["close_price"]
     except Exception as err:
         logger.error(err)
-    logger.info(f"{index_name}:{close_price:.2f}({close_price_time})")
-    return close_price_time, close_price
+    logger.info(f"{index_name}:{close_price:.2f}({close_time})")
+    return close_time, close_price
 
 
 def daemonize():
