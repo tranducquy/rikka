@@ -8,11 +8,10 @@ import json
 import sys
 import pandas as pd
 from logging import config, getLogger
-from datetime import datetime as dt
 import jpxpy.realtime_index
-import investpy
 import line
 import line_token
+import rikka_const
 
 
 def logger_init(name='test'):
@@ -40,7 +39,7 @@ def main_unit():
 
 
 def check_entry(index_name, max_notify_count):
-    csv = "entry.csv"
+    csv = rikka_const.entry_csv
     df = pd.read_csv(csv, index_col=0)
     temp_df = df[df.index == index_name]
     stop_long_value = temp_df["stop_long"][0]
@@ -105,7 +104,7 @@ def get_closeprice(index_name):
 def daemonize():
     pid = os.fork()
     if pid > 0:
-        pid_file = open('/tmp/rikka_daemon.pid', 'w')
+        pid_file = open(rikka_const.pid_file, 'w')
         pid_file.write(str(pid) + "\n")
         pid_file.close()
         sys.exit()
