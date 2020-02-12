@@ -15,7 +15,7 @@ import rikka_const
 
 
 def logger_init(name='test'):
-    log_config = "log.json"
+    log_config = rikka_const.log_conf
     config.dictConfig(json.loads(open(log_config, encoding='UTF-8').read()))
     return getLogger(name)
 
